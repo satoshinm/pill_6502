@@ -11,6 +11,7 @@ CFLAGS += -Wall -Wextra -Werror -Wno-char-subscripts\
 LDFLAGS += $(OPT_FLAGS)
 
 SRC =			\
+	fake6502.c	\
 	cdcacm.c	\
 	main.c		\
 
