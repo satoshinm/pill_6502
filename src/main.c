@@ -105,6 +105,10 @@ char *process_serial_command(char *buf, int len) {
 	} else if (buf[0] == 'p') {
 		paused = !paused;
 		return paused ? "paused" : "resumed";
+	} else if (buf[0] == 'r') {
+		reset6502();
+		paused = false;
+		return "reset";
 	} else if (buf[0] == 't') {
 		static char buf[64];
 		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
