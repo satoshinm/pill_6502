@@ -225,6 +225,8 @@ static void usbuart_usb_out_cb(usbd_device *dev, uint8_t ep)
 			}
 
 			// prompt
+			reply_buf[j++] = '\r';
+			reply_buf[j++] = '\n';
 			reply_buf[j++] = '>';
 			reply_buf[j++] = ' ';
 		}

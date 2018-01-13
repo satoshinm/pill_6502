@@ -19,6 +19,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/systick.h>
@@ -28,6 +29,7 @@
 #include <libopencm3/usb/hid.h>
 #include <libopencm3/usb/cdc.h>
 
+#include "fake6502.h"
 #include "cdcacm.h"
 #include "version.h"
 
@@ -82,6 +84,7 @@ static const char *usb_strings[] = {
 
 void sys_tick_handler(void)
 {
+	step6502();
 	gpio_toggle(GPIOC, GPIO13);
 }
 
@@ -96,6 +99,10 @@ char *process_serial_command(char *buf, int len) {
 
 	if (buf[0] == 'v') {
 		return "Pill 6502 version " FIRMWARE_VERSION;
+	} else if (buf[0] == 't') {
+		static char buf[64];
+		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
+		return buf;
 	} else {
 		return "invalid command, try ? for help";
 	}
@@ -155,6 +162,8 @@ int main(void)
 		sizeof(usb_strings)/sizeof(char *),
 		usbd_control_buffer, sizeof(usbd_control_buffer));
 	usbd_register_set_config_callback(usbd_dev, usb_set_config);
+
+	reset6502();
 
 	while (1)
 		usbd_poll(usbd_dev);
