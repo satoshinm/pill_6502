@@ -105,6 +105,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "fake6502.h"
+
 //6502 defines
 #define UNDOCUMENTED //when this is defined, undocumented opcodes are handled.
                      //otherwise, they're simply treated as NOPs.
