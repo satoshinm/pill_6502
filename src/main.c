@@ -26,15 +26,15 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/usb/usbd.h>
-#include <libopencm3/usb/hid.h>
 #include <libopencm3/usb/cdc.h>
 
 #include "fake6502.h"
+#include "acia6850.h"
 #include "rom.h"
 #include "cdcacm.h"
 #include "version.h"
 
-static usbd_device *usbd_dev;
+usbd_device *usbd_dev;
 
 const struct usb_device_descriptor dev_descr = {
 	.bLength = USB_DT_DEVICE_SIZE,
@@ -83,8 +83,10 @@ static const char *usb_strings[] = {
 	"Pill 6502 UART Port",
 };
 
+static bool running = false;
 void sys_tick_handler(void)
 {
+	if (!running) return;
 	step6502();
 	gpio_toggle(GPIOC, GPIO13);
 }
@@ -100,6 +102,9 @@ char *process_serial_command(char *buf, int len) {
 
 	if (buf[0] == 'v') {
 		return "Pill 6502 version " FIRMWARE_VERSION;
+	} else if (buf[0] == 'r') {
+		running = !running;
+		return running ? "resumed" : "paused";
 	} else if (buf[0] == 't') {
 		static char buf[64];
 		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
@@ -138,7 +143,6 @@ uint8_t usbd_control_buffer[128];
 
 // 6502 processor memory, 16KB (< 20KB)
 uint8_t ram[0x4000];
-// TODO: serial interface, 0xa000-0xbfff
 uint8_t read6502(uint16_t address) {
 	// RAM
 	if (address < sizeof(ram)) {
@@ -152,13 +156,25 @@ uint8_t read6502(uint16_t address) {
 		return rom[address - 0xc000];
 	}
 
+	// ACIA
+	if (address >= 0xa000 && address <= 0xbfff) {
+		return read6850(address);
+	}
+
 	return 0xff;
 }
 
 void write6502(uint16_t address, uint8_t value) {
+	// RAM
 	if (address < sizeof(ram)) {
 		ram[address] = value;
 	}
+
+	// ACIA
+	if (address >= 0xa000 && address <= 0xbfff) {
+		write6850(address, value);
+	}
+
 }
 
 int main(void)

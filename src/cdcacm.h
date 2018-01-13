@@ -7,3 +7,4 @@ extern const struct usb_interface_descriptor uart_data_iface[];
 extern const struct usb_iface_assoc_descriptor uart_assoc;
 
 void cdcacm_set_config(usbd_device *dev, uint16_t wValue);
+void cdcacm_send_chunked_blocking(char *buf, int len, usbd_device *dev);

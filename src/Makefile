@@ -12,6 +12,7 @@ LDFLAGS += $(OPT_FLAGS)
 
 SRC =			\
 	fake6502.c	\
+	acia6850.c	\
 	cdcacm.c	\
 	main.c		\
 
