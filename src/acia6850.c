@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>
 
@@ -20,14 +21,36 @@ extern usbd_device *usbd_dev;
 #define RDRF (1 << 0)
 #define TDRE (1 << 1)
 
+
+static char input[256];
+static int input_index = 0;
+static int input_processed_index = 0;
+
+void process_serial_input_byte(char b) {
+    input[input_index++] = b;
+    input_index %= sizeof(input);
+}
+
+
 uint8_t read6850(uint16_t address) {
 	switch(address & 1) {
-		case ACIAStatus:
-            return TDRE; // writable
+		case ACIAStatus: {
+            // Always writable
+            uint8_t flags = TDRE;
+
+            // Readable if there is pending user input data which wasn't read
+            if (input_processed_index < input_index) flags |= RDRF;
+
+            return flags;
 			break;
-		case ACIAData:
-            // TODO: read buffer from serial port
+        }
+		case ACIAData: {
+            char data = input[input_processed_index++];
+            input_processed_index %= sizeof(input);
+
+            return data;
 			break;
+        }
 		default:
             break;
 	}

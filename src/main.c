@@ -103,27 +103,25 @@ static void usb_reset()
 	paused = false;
 }
 
-char *process_serial_command(char *buf, int len) {
-	(void) len;
-
-	if (buf[0] == 'v') {
+char *process_serial_command(char b) {
+	if (b == '\x16') { // ^V
 		return "Pill 6502 version " FIRMWARE_VERSION;
-	} else if (buf[0] == 'p') {
+	} else if (b == '\x10') { // ^P
 		paused = !paused;
 		return paused ? "paused" : "resumed";
-	} else if (buf[0] == 'r') {
+	} else if (b == '\x12') { // ^R
 		reset6502();
 		paused = false;
 		return "reset";
-	} else if (buf[0] == 't') {
+	} else if (b == '\x14') { // T
 		static char buf[64];
 		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
 		return buf;
-	} else {
-		return "invalid command, try ? for help";
+	} else if (b == '\x07') { // G
+		return "^V=version ^R=reset ^P=pause ^T=ticks ^G=help";
 	}
 
-	return "";
+	return NULL;
 }
 
 static void setup_clock(void) {
