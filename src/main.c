@@ -103,6 +103,7 @@ static void usb_reset()
 	paused = false;
 }
 
+extern bool local_echo;
 char *process_serial_command(char b) {
 	if (b == '\x16') { // ^V
 		return "Pill 6502 version " FIRMWARE_VERSION;
@@ -113,12 +114,15 @@ char *process_serial_command(char b) {
 		reset6502();
 		paused = false;
 		return "reset";
-	} else if (b == '\x14') { // T
+	} else if (b == '\x05') { // ^E
+		local_echo = !local_echo;
+		return local_echo ? "local echo enabled" : "local echo disabled";
+	} else if (b == '\x14') { // ^T
 		static char buf[64];
 		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
 		return buf;
-	} else if (b == '\x07') { // G
-		return "^V=version ^R=reset ^P=pause ^T=ticks ^G=help";
+	} else if (b == '\x07') { // ^G
+		return "^V=version ^R=reset ^E=echo ^P=pause ^T=ticks ^G=help";
 	}
 
 	return NULL;

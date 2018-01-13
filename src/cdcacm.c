@@ -192,6 +192,8 @@ void cdcacm_send_chunked_blocking(char *buf, int len, usbd_device *dev) {
 extern char *process_serial_command(char b);
 extern void *process_serial_input_byte(char b);
 
+bool local_echo = false;
+
 static void usbuart_usb_out_cb(usbd_device *dev, uint8_t ep)
 {
 	(void)ep;
@@ -207,10 +209,12 @@ static void usbuart_usb_out_cb(usbd_device *dev, uint8_t ep)
 	for(int i = 0; i < len; i++) {
 		gpio_toggle(GPIOC, GPIO13);
 
-		// Echo back what was typed
-		// Enter sends a CR, but an LF is needed to advance to next line
-		if (buf[i] == '\r') reply_buf[j++] = '\n';
-		reply_buf[j++] = buf[i];
+		// If enabled, echo back what was typed
+		if (local_echo) {
+			// Enter sends a CR, but an LF is needed to advance to next line
+			if (buf[i] == '\r') reply_buf[j++] = '\n';
+			reply_buf[j++] = buf[i];
+		}
 
 		char *response = process_serial_command(buf[i]);
 		if (response) {
