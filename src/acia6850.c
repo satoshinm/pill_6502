@@ -13,17 +13,15 @@ extern usbd_device *usbd_dev;
 //
 
 #define ACIAControl 0
-#define ACIAStatus 1
-#define ACIAData 2
+#define ACIAStatus 0
+#define ACIAData 1
 
 // "MC6850 Data Register (R/W) Data can be read when Status.Bit0=1, and written when Status.Bit1=1."
-#define RDRF 1
-#define TDRE 2
+#define RDRF (1 << 0)
+#define TDRE (1 << 1)
 
 uint8_t read6850(uint16_t address) {
-	switch(address & 3) {
-		case ACIAControl:
-			break;
+	switch(address & 1) {
 		case ACIAStatus:
             return TDRE; // writable
 			break;
@@ -38,12 +36,9 @@ uint8_t read6850(uint16_t address) {
 }
 
 void write6850(uint16_t address, uint8_t value) {
-	switch(address & 3) {
+	switch(address & 1) {
 		case ACIAControl:
             // TODO: decode baudrate, mode, break control, interrupt
-			break;
-		case ACIAStatus:
-            (void) value;
 			break;
 		case ACIAData: {
             static char buf[1];
