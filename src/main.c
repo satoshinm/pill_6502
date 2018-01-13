@@ -97,6 +97,12 @@ static void usb_set_config(usbd_device *dev, uint16_t wValue)
 	cdcacm_set_config(dev, wValue);
 }
 
+static void usb_reset()
+{
+	reset6502();
+	paused = false;
+}
+
 char *process_serial_command(char *buf, int len) {
 	(void) len;
 
@@ -190,6 +196,7 @@ int main(void)
 		sizeof(usb_strings)/sizeof(char *),
 		usbd_control_buffer, sizeof(usbd_control_buffer));
 	usbd_register_set_config_callback(usbd_dev, usb_set_config);
+	usbd_register_reset_callback(usbd_dev, usb_reset);
 
 	reset6502();
 
