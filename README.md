@@ -1,11 +1,14 @@
 # pill\_6502: emulated 8-bit 6502 CPU and 6850 ACIA for STM32F103 blue pill
 
+[![CircleCI](https://circleci.com/gh/satoshinm/pill_6502.svg?style=svg)](https://circleci.com/gh/satoshinm/pill_6502)
+
 [6502](https://en.wikipedia.org/wiki/MOS_Technology_6502) 8-bit CPU and
 [6850](http://www.cpcwiki.eu/imgs/3/3f/MC6850.pdf) ACIA emulator for the
 [STM32F103](https://www.reddit.com/r/stm32f103/) [blue pill](http://wiki.stm32duino.com/index.php?title=Blue_Pill)
 microcontroller boards and similar. Turn your modern micro into a retrocomputing processor.
 
 To build, run `make`, to install, flash `src/pill_6502.bin` to the blue pill.
+Prebuilt binaries are available from [CircleCI](https://circleci.com/gh/satoshinm/pill_6502/).
 Connect the board to your computer using USB, this will reset the CPU
 and a virtual serial port should appear (e.g., `/dev/cu.usbmodem6502`),
 connect using GNU Screen, and you should see the output from the emulated
@@ -34,3 +37,5 @@ by replacing `ROM.HEX` and rebuilding. Memory map:
 | 0x4000 | 0x9fff | (unused) |
 | 0xa000 | 0xbfff | 6850 ACIA serial comm interface, emulated connecting to USB CDC-ACM virtual serial port |
 | 0xc000 | 0xffff | 16KB internal ROM |
+
+Thanks to Mike Chambers for the [fake6502](http://rubbermallet.org/fake6502.c) processor emulation core.
