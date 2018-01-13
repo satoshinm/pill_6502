@@ -127,6 +127,25 @@ static void setup_gpio(void) {
 /* Buffer to be used for control requests. */
 uint8_t usbd_control_buffer[128];
 
+
+// 6502 processor memory, 16KB (< 20KB)
+uint8_t ram[0x4000];
+uint8_t read6502(uint16_t address) {
+	if (address < sizeof(ram)) {
+		return ram[address];
+	}
+	// TODO: serial interface, 0xa000-0xbfff
+	// TODO: ROM, 0xc000-0xffff
+
+	return 0xff;
+}
+
+void write6502(uint16_t address, uint8_t value) {
+	if (address < sizeof(ram)) {
+		ram[address] = value;
+	}
+}
+
 int main(void)
 {
 	setup_clock();
