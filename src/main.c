@@ -83,10 +83,10 @@ static const char *usb_strings[] = {
 	"Pill 6502 UART Port",
 };
 
-static bool running = false;
+static bool paused = true;
 void sys_tick_handler(void)
 {
-	if (!running) return;
+	if (paused) return;
 	step6502();
 	gpio_toggle(GPIOC, GPIO13);
 }
@@ -102,9 +102,9 @@ char *process_serial_command(char *buf, int len) {
 
 	if (buf[0] == 'v') {
 		return "Pill 6502 version " FIRMWARE_VERSION;
-	} else if (buf[0] == 'r') {
-		running = !running;
-		return running ? "resumed" : "paused";
+	} else if (buf[0] == 'p') {
+		paused = !paused;
+		return paused ? "paused" : "resumed";
 	} else if (buf[0] == 't') {
 		static char buf[64];
 		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
