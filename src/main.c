@@ -30,6 +30,7 @@
 #include <libopencm3/usb/cdc.h>
 
 #include "fake6502.h"
+#include "rom.h"
 #include "cdcacm.h"
 #include "version.h"
 
@@ -137,12 +138,19 @@ uint8_t usbd_control_buffer[128];
 
 // 6502 processor memory, 16KB (< 20KB)
 uint8_t ram[0x4000];
+// TODO: serial interface, 0xa000-0xbfff
 uint8_t read6502(uint16_t address) {
+	// RAM
 	if (address < sizeof(ram)) {
 		return ram[address];
 	}
-	// TODO: serial interface, 0xa000-0xbfff
-	// TODO: ROM, 0xc000-0xffff
+
+	// ROM
+	if (address >= 0xc000) {
+		const uint8_t *rom = &_binary____osi_bas_ROM_o_bin_start;
+
+		return rom[address - 0xc000];
+	}
 
 	return 0xff;
 }

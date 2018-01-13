@@ -15,6 +15,8 @@ SRC =			\
 	cdcacm.c	\
 	main.c		\
 
+ROM = ../osi_bas/ROM.HEX
+
 CROSS_COMPILE ?= arm-none-eabi-
 CC = $(CROSS_COMPILE)gcc
 OBJCOPY = $(CROSS_COMPILE)objcopy
@@ -38,6 +40,7 @@ host_clean:
 	-$(Q)$(RM) pill_6502.bin
 
 OBJ = $(SRC:.c=.o)
+OBJ += $(ROM:.HEX=.o)
 
 pill_6502.elf: version.h $(OBJ)
 	@echo "  LD      $@"
@@ -46,6 +49,12 @@ pill_6502.elf: version.h $(OBJ)
 %.o:	%.c
 	@echo "  CC      $<"
 	$(Q)$(CC) $(CFLAGS) -c $< -o $@
+
+%.o:	%.HEX
+	@echo "  OBJCOPY $@.bin"
+	$(Q)$(OBJCOPY) -I ihex -O binary $^ $@.bin
+	@echo "  OBJCOPY $@"
+	$(Q)$(OBJCOPY) -I binary -O elf32-littlearm -B arm --rename-section .data=.rodata,alloc,load,readonly,data,contents $@.bin $@
 
 %.bin:	%.elf
 	@echo "  OBJCOPY $@"
