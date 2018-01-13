@@ -51,10 +51,6 @@ pill_6502.elf: version.h $(OBJ)
 	@echo "  OBJCOPY $@"
 	$(Q)$(OBJCOPY) -O binary $^ $@
 
-%.hex:	%
-	@echo "  OBJCOPY $@"
-	$(Q)$(OBJCOPY) -O ihex $^ $@
-
 .PHONY:	clean host_clean FORCE
 
 clean:	host_clean
