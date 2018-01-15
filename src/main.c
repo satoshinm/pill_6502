@@ -84,9 +84,11 @@ static const char *usb_strings[] = {
 };
 
 static bool paused = true;
+uint32_t millis = 0;
 void sys_tick_handler(void)
 {
 	if (paused) return;
+	++millis;
 	step6502();
 	gpio_toggle(GPIOC, GPIO13);
 }
@@ -110,6 +112,7 @@ char *process_serial_command(char b) {
 	} else if (b == '\x10') { // ^P
 		paused = !paused;
 		return paused ? "paused" : "resumed";
+	} else if (b == '\x06') { // ^F
 	} else if (b == '\x12') { // ^R
 		reset6502();
 		paused = false;
@@ -118,11 +121,24 @@ char *process_serial_command(char b) {
 		local_echo = !local_echo;
 		return local_echo ? "local echo enabled" : "local echo disabled";
 	} else if (b == '\x14') { // ^T
+		static uint32_t last_ticks = 0;
+		static uint32_t last_millis = 0;
+		uint32_t hz = 0;
+		if (last_ticks != 0) {
+			uint32_t elapsed_ticks = clockticks6502 - last_ticks;
+			uint32_t elapsed_millis = millis - last_millis;
+
+			if (elapsed_millis != 0) hz = elapsed_ticks * 1000 / elapsed_millis;
+		}
+
+		last_ticks = clockticks6502;
+		last_millis = millis;
+
 		static char buf[64];
-		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
+		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions\r\n%ld Hz", clockticks6502, instructions, hz);
 		return buf;
 	} else if (b == '\x07') { // ^G
-		return "^V=version ^R=reset ^E=echo ^P=pause ^T=ticks ^G=help";
+		return "^V=version ^R=reset ^E=echo ^P=pause ^T=timing ^G=help";
 	}
 
 	return NULL;
