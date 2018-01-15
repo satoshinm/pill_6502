@@ -84,13 +84,11 @@ static const char *usb_strings[] = {
 };
 
 static bool paused = true;
-
-volatile uint32_t millis = 0;
 void sys_tick_handler(void)
 {
-	++millis;
 	// TODO: measure frequency
 }
+
 
 static void usb_set_config(usbd_device *dev, uint16_t wValue)
 {
