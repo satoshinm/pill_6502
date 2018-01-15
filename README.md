@@ -22,10 +22,9 @@ Special commands built-in, not passed to the ACIA and 6502:
 | --------- | ------ |
 | ^V | Show `pill_6502` version |
 | ^P | Pause/resume 6502 processor execution |
-| ^F | Show frequency |
 | ^R | Reset the 6502 processor (also reset on USB reset) |
 | ^E | Local echo toggle, off by default |
-| ^T | Show clock ticks and instruction count |
+| ^T | Show clock ticks, instruction count, and frequency since last ^T |
 | ^G | Show help |
 
 Intended to be somewhat compatible with [Grant Searle's Simple6502](http://searle.hostei.com/grant/6502/Simple6502.html),
