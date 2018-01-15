@@ -84,9 +84,11 @@ static const char *usb_strings[] = {
 };
 
 static bool paused = true;
+uint32_t millis = 0;
 void sys_tick_handler(void)
 {
 	if (paused) return;
+	++millis;
 	step6502();
 	gpio_toggle(GPIOC, GPIO13);
 }
@@ -110,6 +112,25 @@ char *process_serial_command(char b) {
 	} else if (b == '\x10') { // ^P
 		paused = !paused;
 		return paused ? "paused" : "resumed";
+	} else if (b == '\x06') { // ^F
+		static uint32_t last_ticks = 0;
+		static uint32_t last_millis = 0;
+		if (last_ticks == 0) {
+			last_ticks = clockticks6502;
+			last_millis = millis;
+
+			return "press ^F again to measure frequency";
+		}
+
+		uint32_t hz = (clockticks6502 - last_ticks) * 1000 / (millis - last_millis);
+
+		static char buf[64];
+		snprintf(buf, sizeof(buf), "%ld Hz", hz);
+
+		last_ticks = clockticks6502;
+		last_millis = millis;
+
+		return buf;
 	} else if (b == '\x12') { // ^R
 		reset6502();
 		paused = false;
@@ -122,7 +143,7 @@ char *process_serial_command(char b) {
 		snprintf(buf, sizeof(buf), "%ld ticks\r\n%ld instructions", clockticks6502, instructions);
 		return buf;
 	} else if (b == '\x07') { // ^G
-		return "^V=version ^R=reset ^E=echo ^P=pause ^T=ticks ^G=help";
+		return "^V=version ^R=reset ^E=echo ^P=pause ^F=freq ^T=ticks ^G=help";
 	}
 
 	return NULL;
