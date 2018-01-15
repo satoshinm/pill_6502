@@ -187,6 +187,10 @@ void write6502(uint16_t address, uint8_t value) {
 
 }
 
+void usb_lp_can_rx0_isr(void) {
+	usbd_poll(usbd_dev);
+}
+
 int main(void)
 {
 	setup_clock();
@@ -198,11 +202,12 @@ int main(void)
 	usbd_register_set_config_callback(usbd_dev, usb_set_config);
 	usbd_register_reset_callback(usbd_dev, usb_reset);
 
+	nvic_set_priority(NVIC_USB_LP_CAN_RX0_IRQ, 2 << 4);
+	nvic_enable_irq(NVIC_USB_LP_CAN_RX0_IRQ);
+
 	reset6502();
 
 	while (1) {
-		usbd_poll(usbd_dev);
-
 		if (!paused) {
 			step6502();
 			gpio_toggle(GPIOC, GPIO13);
