@@ -86,9 +86,7 @@ static const char *usb_strings[] = {
 static bool paused = true;
 void sys_tick_handler(void)
 {
-	if (paused) return;
-	step6502();
-	gpio_toggle(GPIOC, GPIO13);
+	// TODO: measure frequency
 }
 
 
@@ -202,7 +200,13 @@ int main(void)
 
 	reset6502();
 
-	while (1)
+	while (1) {
 		usbd_poll(usbd_dev);
+
+		if (!paused) {
+			step6502();
+			gpio_toggle(GPIOC, GPIO13);
+		}
+	}
 }
 
